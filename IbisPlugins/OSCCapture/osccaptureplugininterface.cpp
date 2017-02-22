@@ -37,7 +37,7 @@ QWidget * OSCCapturePluginInterface::CreateTab()
     OSCCaptureWidget * widget = new OSCCaptureWidget;
     widget->SetPluginInterface( this );
 
-    connect( GetApplication(), SIGNAL(IbisClockTick()), this, SLOT(OnStudyUpdate()) );
+    connect( GetApplication(), SIGNAL(IbisClockTick()), this, SLOT(OnUpdate()) );
 
     return widget;
 }
