@@ -234,3 +234,13 @@ void CameraCalibrationSidePanelWidget::on_viewListWidget_itemChanged( QListWidge
     m_pluginInterface->GetCameraCalibrator()->SetViewEnabled( index, enabled );
     m_pluginInterface->DoCalibration();
 }
+
+void CameraCalibrationSidePanelWidget::on_captureButton_toggled(bool checked)
+{
+    m_pluginInterface->SetCaptureCalibrationFixPoints( checked );
+}
+
+void CameraCalibrationSidePanelWidget::on_clearButton_clicked()
+{
+    m_pluginInterface->ClearCalibrationFixPoints();
+}

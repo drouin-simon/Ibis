@@ -53,6 +53,10 @@ private slots:
     void on_updateCalibrationButton_clicked();
     void on_viewListWidget_itemChanged(QListWidgetItem *item);
 
+    void on_captureButton_toggled(bool checked);
+
+    void on_clearButton_clicked();
+
 private:
 
     CameraCalibrationPluginInterface * m_pluginInterface;

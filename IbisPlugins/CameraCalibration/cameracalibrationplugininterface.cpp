@@ -32,14 +32,14 @@ See Copyright.txt or http://ibisneuronav.org/Copyright.html for details.
 
 CameraCalibrationPluginInterface::CameraCalibrationPluginInterface()
 {
-    m_cameraCalibrationWidget = 0;
+    m_cameraCalibrationWidget = nullptr;
     m_calibrationGridWidth = 6;   // This is the number of crossings being considered for calibration and not the number of squares
     m_calibrationGridHeight = 8;
     m_calibrationGridCellSize = 30.0;
     m_cameraCalibrator = new CameraCalibrator;
     m_cameraCalibrator->SetPluginInterface( this );
     m_currentCameraObjectId = IbisAPI::InvalidId;
-    m_calibrationGridObject = 0;
+    m_calibrationGridObject = nullptr;
 
     m_computeCenter = false;
     m_computeK1 = false;
@@ -52,6 +52,8 @@ CameraCalibrationPluginInterface::CameraCalibrationPluginInterface()
     m_numberOfViewsToAccumulate = 10;
 
     m_meanReprojectionErrormm = 0.0;
+
+    m_capturingFixPoints = false;
 }
 
 CameraCalibrationPluginInterface::~CameraCalibrationPluginInterface()
@@ -135,12 +137,12 @@ void CameraCalibrationPluginInterface::StartCalibrationWidget( bool on )
 
 bool CameraCalibrationPluginInterface::IsCalibrationWidgetOn()
 {
-    return (m_cameraCalibrationWidget != 0);
+    return (m_cameraCalibrationWidget != nullptr);
 }
 
 void CameraCalibrationPluginInterface::OnCameraCalibrationWidgetClosed()
 {
-    m_cameraCalibrationWidget = 0;
+    m_cameraCalibrationWidget = nullptr;
     emit CameraCalibrationWidgetClosedSignal();
 }
 
@@ -153,7 +155,6 @@ void CameraCalibrationPluginInterface::GetAllValidCamerasFromScene( QList<Camera
 {
     QList<CameraObject*> allCams;
     GetIbisAPI()->GetAllCameraObjects( allCams );
-    int nbValidCams = 0;
     bool needTrackableCamera = !GetIbisAPI()->IsViewerOnly();
     for( int i = 0; i < allCams.size(); ++i )
     {
@@ -174,7 +175,7 @@ void CameraCalibrationPluginInterface::SetCurrentCameraObjectId( int id )
 
 bool CameraCalibrationPluginInterface::HasValidCamera()
 {
-    return (GetCurrentCameraObject() != 0);
+    return (GetCurrentCameraObject() != nullptr);
 }
 
 CameraObject * CameraCalibrationPluginInterface::GetCurrentCameraObject()
@@ -303,6 +304,42 @@ void CameraCalibrationPluginInterface::DoCalibration()
 
         emit PluginModified();
     }
+}
+
+bool CameraCalibrationPluginInterface::IsCapturingCalibrationFixPoints()
+{
+    return m_capturingFixPoints;
+}
+
+void CameraCalibrationPluginInterface::SetCaptureCalibrationFixPoints( bool capturing )
+{
+    if( m_capturingFixPoints == capturing )
+        return;
+
+    m_capturingFixPoints = capturing;
+    if( m_capturingFixPoints )
+        GetIbisAPI()->GetMain3DView()->AddInteractionObject( this, 0.6 );
+    else
+        GetIbisAPI()->GetMain3DView()->RemoveInteractionObject(this);
+}
+
+void CameraCalibrationPluginInterface::ClearCalibrationFixPoints()
+{
+
+}
+
+bool CameraCalibrationPluginInterface::OnLeftButtonPressed( View * v, int x, int y, unsigned )
+{
+    CameraObject * cam = GetCurrentCameraObject();
+    if( cam && cam->GetTrackCamera() && v->GetType() == THREED_VIEW_TYPE )
+    {
+        double xIm, yIm;
+        cam->WindowToImage( x, y, v, xIm, yIm );
+        double color[4] = { 0.0, 1.0, 1.0, 1.0 };
+        cam->DrawTarget( xIm, yIm, 10.0, color );
+        return true;
+    }
+    return false;
 }
 
 void CameraCalibrationPluginInterface::UpdateCameraViewsObjects()

@@ -91,6 +91,14 @@ public:
     void UpdateCameraViewsObjects();
     void DoCalibration();
 
+    // Fix Calibration
+    bool IsCapturingCalibrationFixPoints();
+    void SetCaptureCalibrationFixPoints( bool capturing );
+    void ClearCalibrationFixPoints();
+
+    // Mouse interaction with AR view
+    virtual bool OnLeftButtonPressed( View * v, int x, int y, unsigned modifiers ) override;
+
     // Manage grid params
     int GetCalibrationGridWidth() { return m_calibrationGridWidth; }
     void SetCalibrationGridWidth( int width );
@@ -145,6 +153,9 @@ protected:
     int m_numberOfViewsToAccumulate;
     bool m_accumulate;
     bool m_isAccumulating;
+
+    // Calibration fix points
+    bool m_capturingFixPoints;
 
     // Result
     double m_meanReprojectionErrormm;
